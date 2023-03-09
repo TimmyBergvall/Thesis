@@ -20,7 +20,7 @@ body_class = ""
 
 list = []
 
-myDict = {}
+headerDict = {}
 
 articleDict = {}
 
@@ -29,7 +29,7 @@ summarizedDict = {}
 linkDict = {}
 
 def main():
-    set_variables("expressen")
+    set_variables("svt")
     get_links()
     print_articles()
 
@@ -124,7 +124,7 @@ def get_article(link, counter, articleCounter):
     append = ""
     for header in header:
         the_header = '"' + header.get_text() + '"'
-        myDict[articleCounter] = the_header
+        headerDict[articleCounter] = the_header
         #append += the_header + "\n"
 
 
@@ -157,7 +157,7 @@ def get_article(link, counter, articleCounter):
 def print_articles():
     for i in summarizedDict:
         print(linkDict[i])
-        print(myDict[i])
+        print(headerDict[i])
         print(summarizedDict[i])
         print("\n\n\n")
 
