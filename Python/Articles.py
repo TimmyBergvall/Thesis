@@ -17,7 +17,6 @@ div_or_p_lead = ""
 div_or_p_body = ""
 lead_class = ""
 body_class = ""
-header_class = ""
 
 list = []
 
@@ -36,7 +35,7 @@ def main():
 
 def set_variables(website):
     # This data will be fetched from a database in the future
-    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
+    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class
     if website == "aftonbladet":
         landing_page = "https://www.aftonbladet.se/senastenytt"
         link_class = "hyperion-css-1ypiqmx"
@@ -46,7 +45,6 @@ def set_variables(website):
         div_or_p_body = "p"
         lead_class = "hyperion-css-n38mho"
         body_class = "borderColor borderWidth margin padding mqDark hyperion-css-1nrt0vq"
-        header_class = "h1 hyperion-css-5tht1q"
 
     elif website == "expressen":
         landing_page = "https://www.expressen.se/nyheter/senaste-nytt/"
@@ -57,7 +55,7 @@ def set_variables(website):
         div_or_p_body = "div"
         lead_class = "article__preamble rich-text"
         body_class = "rich-text"
-        header_class = "article__header"
+
 
     elif website == "svt":
         landing_page = "https://www.svt.se/?visaallasenastenytt=1#senastenytt"
@@ -68,7 +66,7 @@ def set_variables(website):
         div_or_p_body = "div"
         lead_class = "nyh_article__lead"
         body_class = "nyh_article-body"
-        header_class = "nyh_article__heading"
+
 
 
 def get_links():
@@ -78,12 +76,6 @@ def get_links():
     soup = BeautifulSoup(r.content, 'html.parser')
     # Find first 10 links on the page
     links = soup.find_all(li_or_a, attrs={"class": link_class})[:10]
-
-    myHeader = soup.find_all("div", attrs={"class": "page-list__item__meta"})
-
-    for i in range(0,10):
-        print(myHeader[i])
-
 
     counter = 0
     articleCounter = 0
@@ -96,12 +88,24 @@ def get_links():
 
 def get_article(link, counter, articleCounter):
     # Get the link to the article
+
+   
+        
+
     if li_or_a == "li":
-        myLinks = start_link_for_article + link.find("a").get("href")
-        linkDict[counter] = myLinks
+        if ("https://" in link.find("a").get("href")):
+            myLinks = link.find("a").get("href")
+            linkDict[counter] = myLinks
+        else:
+            myLinks = start_link_for_article + link.find("a").get("href")
+            linkDict[counter] = myLinks
     else:
-        myLinks = start_link_for_article + link.get("href")
-        linkDict[counter] = myLinks
+        if ("https://" in link.get("href")):
+            myLinks = link.get("href")
+            linkDict[counter] = myLinks
+        else:
+            myLinks = start_link_for_article + link.get("href")
+            linkDict[counter] = myLinks
 
     # Make a request to the website
     req = requests.get(myLinks)
@@ -109,9 +113,11 @@ def get_article(link, counter, articleCounter):
     soup = BeautifulSoup(req.content, 'html.parser')
 
     # Find all divs on the page
-    header = soup.find_all("header", attrs={"class": header_class})
+    header = soup.find_all("h1")
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     body = soup.find_all(div_or_p_body, attrs={"class": body_class})
+
+   
 
 
     # Add the header of the article
@@ -149,11 +155,11 @@ def get_article(link, counter, articleCounter):
     ml(append, counter)
 
 def print_articles():
-    #"for i in summarizedDict:
-        #print(linkDict[i])
-        #print(myDict[i])
-        #print(summarizedDict[i])
-       # print("\n\n\n")
+    for i in summarizedDict:
+        print(linkDict[i])
+        print(myDict[i])
+        print(summarizedDict[i])
+        print("\n\n\n")
 
     #for i in myDict:
         #print(myDict[i])
