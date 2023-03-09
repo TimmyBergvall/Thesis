@@ -3,6 +3,9 @@ import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
 
+#import nltk
+#nltk.download('punkt')
+#pip intsll numpy
 # pip install sumy
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
