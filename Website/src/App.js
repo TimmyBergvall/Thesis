@@ -12,6 +12,7 @@ import {
 
 
 import Home from "./components/Home"
+import Navbar from "./components/Navbar"
 
 
 
@@ -19,6 +20,7 @@ function App() {
   
   return (
     <>
+      <Navbar />
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />

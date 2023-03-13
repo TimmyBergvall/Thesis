@@ -1,4 +1,3 @@
-
 import "../style/Home.css"
 import firebase from './firebase';
 
@@ -46,7 +45,6 @@ const handleHeaderClick = (link) => {
     return (
         <div>
         <div className="center">
-            <h1 className="shadow">Articles</h1>
             {Articles.map((art) => (
         
             <div className="border" key={art.id}>
@@ -61,15 +59,6 @@ const handleHeaderClick = (link) => {
             
         </div>        
         </div>
-
-
-        
-        
-
-
-
-        
-        
         
     );
 };
