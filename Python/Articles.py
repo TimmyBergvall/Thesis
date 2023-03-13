@@ -3,10 +3,9 @@ import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
 
-
-import nltk
-nltk.download('punkt')
-
+#import nltk
+#nltk.download('punkt')
+#pip intsll numpy
 # pip install sumy
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -39,6 +38,9 @@ div_or_p_lead = ""
 div_or_p_body = ""
 lead_class = ""
 body_class = ""
+header_class = ""
+header_or_h1 = ""
+
 
 list = []
 
@@ -59,7 +61,7 @@ def main():
 
 def set_variables():
     # This data will be fetched from a database in the future
-    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class
+    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class, header_or_h1
     if website == "aftonbladet":
         landing_page = "https://www.aftonbladet.se/senastenytt"
         link_class = "hyperion-css-1ypiqmx"
@@ -69,6 +71,8 @@ def set_variables():
         div_or_p_body = "p"
         lead_class = "hyperion-css-n38mho"
         body_class = "borderColor borderWidth margin padding mqDark hyperion-css-1nrt0vq"
+        header_class = "h1 hyperion-css-5tht1q"
+        header_or_h1 = "h1"
 
     elif website == "expressen":
         landing_page = "https://www.expressen.se/nyheter/senaste-nytt/"
@@ -79,6 +83,8 @@ def set_variables():
         div_or_p_body = "div"
         lead_class = "article__preamble rich-text"
         body_class = "rich-text"
+        header_class = "article__header"
+        header_or_h1 = "header"
 
 
     elif website == "svt":
@@ -90,6 +96,8 @@ def set_variables():
         div_or_p_body = "div"
         lead_class = "nyh_article__lead"
         body_class = "nyh_article-body"
+        header_class = "nyh_article__heading"
+        header_or_h1 = "h1"
 
 
 
@@ -137,7 +145,15 @@ def get_article(link, counter, articleCounter):
     soup = BeautifulSoup(req.content, 'html.parser')
 
     # Find all divs on the page
-    header = soup.find_all("h1")
+    if (header_or_h1 == "h1"):
+        header = soup.find_all("h1", attrs={"class": header_class})
+    else:
+        header = soup.find_all("header")
+        for header in header:
+            header = header.find_all("h1")
+
+
+
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     body = soup.find_all(div_or_p_body, attrs={"class": body_class})
 
@@ -148,6 +164,7 @@ def get_article(link, counter, articleCounter):
     append = ""
     for header in header:
         the_header = '"' + header.get_text() + '"'
+        the_header = the_header.replace("\n", " ")
         headerDict[articleCounter] = the_header
         #append += the_header + "\n"
 
