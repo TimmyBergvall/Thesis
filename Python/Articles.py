@@ -3,10 +3,32 @@ import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
 
+
+import nltk
+nltk.download('punkt')
+
 # pip install sumy
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.text_rank import TextRankSummarizer
+
+
+
+#firebase
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+# Use a service account.
+cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+
+app = firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
+
+
+
 
 # Attributes that should be collected from the website
 landing_page = ""
@@ -28,12 +50,14 @@ summarizedDict = {}
 
 linkDict = {}
 
-def main():
-    set_variables("svt")
-    get_links()
-    print_articles()
+website = "svt"
 
-def set_variables(website):
+def main():
+    set_variables()
+    get_links()
+    print_articles(website)
+
+def set_variables():
     # This data will be fetched from a database in the future
     global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class
     if website == "aftonbladet":
@@ -154,12 +178,28 @@ def get_article(link, counter, articleCounter):
     list.append(append)
     ml(append, counter)
 
-def print_articles():
+def print_articles(website):
+    
     for i in summarizedDict:
+        print(i)
         print(linkDict[i])
         print(headerDict[i])
         print(summarizedDict[i])
         print("\n\n\n")
+
+        #define objct (each article)
+        doc_ref = db.collection(u'Articles').document(website + " " + 'Article' + " " + str(i-1))
+        doc_ref.set({
+            u'source' : website,
+            u'header' : headerDict[i],
+            u'link' : linkDict[i],
+            u'text': summarizedDict[i]
+        }, merge=True)
+
+
+
+
+
 
     #for i in myDict:
         #print(myDict[i])

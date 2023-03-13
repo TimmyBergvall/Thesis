@@ -46,10 +46,10 @@ const [loading, setloading] = useState(false);
             {Articles.map((art) => (
         
             <div className="border" key={art.id}>
-                
-                <h2>{art.header}</h2>
-                <h2>{art.text}</h2>
-                <h2>{art.link}</h2>
+                <h2>{art.source}</h2>
+                <h3 href={art.link}>{art.header}</h3>
+                <p>{art.text}</p>
+                <hyper>{art.link}</hyper>
             
             </div>
 
