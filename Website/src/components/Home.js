@@ -15,6 +15,10 @@ function Home(){
 const [Articles, setarticles] = useState([]);
 const [loading, setloading] = useState(false);
 
+const handleHeaderClick = (link) => {
+    window.open(link, "_blank");
+    };
+
   const ref = firebase.firestore().collection("Articles")
   console.log(ref);
 
@@ -46,10 +50,10 @@ const [loading, setloading] = useState(false);
             {Articles.map((art) => (
         
             <div className="border" key={art.id}>
-                <h2>{art.source}</h2>
-                <h3 href={art.link}>{art.header}</h3>
-                <p>{art.text}</p>
-                <hyper>{art.link}</hyper>
+                <h3 className="header" onClick={() => handleHeaderClick(art.link)}>
+                    {art.header} - {art.source}
+                </h3>
+                <p className="bodyText">{art.text}</p>
             
             </div>
 
