@@ -1,6 +1,7 @@
 import "../style/Home.css"
 import firebase from './firebase';
 
+
 import React, { 
     useState, 
     useEffect 
@@ -11,31 +12,31 @@ import React, {
 
 function Home(){
 //Firebase
-const [Articles, setarticles] = useState([]);
+const [sources, setsources] = useState([]);
 const [loading, setloading] = useState(false);
 
 const handleHeaderClick = (link) => {
     window.open(link, "_blank");
     };
 
-  const ref = firebase.firestore().collection("Articles")
-  console.log(ref);
+    const ref = firebase.firestore().collection("Sources").doc("svt").collection("Articles");
+    console.log(ref);
 
-  function getarticles(){
+  function getsources(){
     setloading(true)
     ref.onSnapshot((querySnapshort) => {
         const items = []
         querySnapshort.forEach((doc) =>{
             items.push(doc.data())
         })
-        setarticles(items)
+        setsources(items)
         setloading(false)
 
     })
   }
 
   useEffect(() =>{
-    getarticles()
+    getsources()
   }, [])
 
   if(loading){
@@ -45,11 +46,11 @@ const handleHeaderClick = (link) => {
     return (
         <div>
         <div className="center">
-            {Articles.map((art) => (
+            {sources.map((art) => (
         
             <div className="border" key={art.id}>
                 <h3 className="header" onClick={() => handleHeaderClick(art.link)}>
-                    {art.header} - {art.source}
+                    {art.header}
                 </h3>
                 <p className="bodyText">{art.text}</p>
             

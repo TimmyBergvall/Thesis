@@ -19,8 +19,8 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 
 # Use a service account.
-#cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
-cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+#cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
 
 app = firebase_admin.initialize_app(cred)
 
@@ -206,13 +206,19 @@ def print_articles(website):
         print("\n\n\n")
 
         #define objct (each article)
-        doc_ref = db.collection(u'Articles').document(website + " " + 'Article' + " " + str(i-1))
-        doc_ref.set({
-            u'source' : website,
+        source_ref = db.collection(u'Sources').document(website)
+        source_ref.set({
+            u'name': website
+        })
+
+        article_ref = source_ref.collection(u'Articles').document('Article' + str(i-1))
+        article_ref.set({
             u'header' : headerDict[i],
             u'link' : linkDict[i],
             u'text': summarizedDict[i]
-        }, merge=True)
+        })
+
+
 
 
 
