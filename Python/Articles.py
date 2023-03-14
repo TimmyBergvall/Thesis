@@ -40,7 +40,6 @@ div_or_p_body = ""
 lead_class = ""
 body_class = ""
 header_class = ""
-header_or_h1 = ""
 
 
 list = []
@@ -53,7 +52,7 @@ summarizedDict = {}
 
 linkDict = {}
 
-website = "svt"
+website = "expressen"
 
 def main():
     set_variables()
@@ -62,7 +61,7 @@ def main():
 
 def set_variables():
     # This data will be fetched from a database in the future
-    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class, header_or_h1
+    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
     if website == "aftonbladet":
         landing_page = "https://www.aftonbladet.se/senastenytt"
         link_class = "hyperion-css-1ypiqmx"
@@ -73,7 +72,6 @@ def set_variables():
         lead_class = "hyperion-css-n38mho"
         body_class = "borderColor borderWidth margin padding mqDark hyperion-css-1nrt0vq"
         header_class = "h1 hyperion-css-5tht1q"
-        header_or_h1 = "h1"
 
     elif website == "expressen":
         landing_page = "https://www.expressen.se/nyheter/senaste-nytt/"
@@ -84,8 +82,7 @@ def set_variables():
         div_or_p_body = "div"
         lead_class = "article__preamble rich-text"
         body_class = "rich-text"
-        header_class = "article__header"
-        header_or_h1 = "header"
+        header_class = ""
 
 
     elif website == "svt":
@@ -98,7 +95,6 @@ def set_variables():
         lead_class = "nyh_article__lead"
         body_class = "nyh_article-body"
         header_class = "nyh_article__heading"
-        header_or_h1 = "h1"
 
 
 
@@ -108,15 +104,18 @@ def get_links():
     # Parse the HTML content
     soup = BeautifulSoup(r.content, 'html.parser')
     # Find first 10 links on the page
-    links = soup.find_all(li_or_a, attrs={"class": link_class})[:10]
+    links = soup.find_all(li_or_a, attrs={"class": link_class})[:20]
 
     counter = 0
     articleCounter = 0
-    for link in links:
-        counter += 1
-        articleCounter += 1
-        get_article(link, counter, articleCounter)
-        
+    while articleDict.__len__() < 10:
+        for link in links:
+            if articleDict.__len__() == 10:
+                break
+            counter += 1
+            articleCounter += 1
+            get_article(link, counter, articleCounter)
+            
         
 
 def get_article(link, counter, articleCounter):
@@ -146,13 +145,13 @@ def get_article(link, counter, articleCounter):
     soup = BeautifulSoup(req.content, 'html.parser')
 
     # Find all divs on the page
-    if (header_or_h1 == "h1"):
+    if (header_class != ""):
         header = soup.find_all("h1", attrs={"class": header_class})
     else:
-        header = soup.find_all("header")
-        for header in header:
-            header = header.find_all("h1")
-
+        header = soup.find_all("h1")
+        
+    
+    
 
 
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
@@ -192,9 +191,10 @@ def get_article(link, counter, articleCounter):
     append += the_body
 
     # add the complete articles to the list
-    articleDict[counter] = append
-    list.append(append)
-    ml(append, counter)
+    if (append != ""):
+        articleDict[counter] = append
+        list.append(append)
+        ml(append, counter)
 
 def print_articles(website):
     
@@ -205,14 +205,7 @@ def print_articles(website):
         print(summarizedDict[i])
         print("\n\n\n")
 
-        #define objct (each article)
-        doc_ref = db.collection(u'Articles').document(website + " " + 'Article' + " " + str(i-1))
-        doc_ref.set({
-            u'source' : website,
-            u'header' : headerDict[i],
-            u'link' : linkDict[i],
-            u'text': summarizedDict[i]
-        }, merge=True)
+       
 
 
 
