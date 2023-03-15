@@ -13,6 +13,7 @@ function Navbar({selectedSources, setSelectedSources}){
     const [showSource, setShowSource] = useState(false);
     const [sources, setSources] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [chosenSource, setChosenSource] = useState("");
     const ref = firebase.firestore().collection("Sources");
 
     useEffect(() => {
@@ -30,8 +31,7 @@ function Navbar({selectedSources, setSelectedSources}){
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('selectedSources', JSON.stringify(selectedSources));
-        localStorage.setItem("sources1", JSON.stringify(sources)); 
+        localStorage.setItem("selectedSources", JSON.stringify(selectedSources));
     }, [selectedSources]);
     
 
@@ -67,29 +67,23 @@ function Navbar({selectedSources, setSelectedSources}){
         <div>
             <div className="center">
                 <div>    
-                    <h2 className="shadow" onClick={() => setShowSource(!showSource)}>Header</h2>
+                    <h2 className="shadow" onClick={() => setShowSource(!showSource)}>Select sources:</h2>
                     {showSource && (
                         <div>
-                            <h3>Select Source:</h3>
                             {sources.map((source) => (
                                 <div key={source}>
-                                    <h4 onClick={() => handleSourceClick(source)}>
-                                        {source}
-                                    </h4>
+                                    <h4 
+                                    className={selectedSources.includes(source) ? "selected" : ""}
+                                    onClick={() => {
+                                        handleSourceClick(source);
+                                        setChosenSource(source);
+                                    }}> {source} </h4>
                                 </div>
                             ))}
                         </div>  
                     )}
                 </div>    
             </div> 
-            <div>
-                <h3>Selected sources:</h3>
-                {selectedSources.map((source) => (
-                    <div key={source}>
-                        <h4>{source}</h4>
-                    </div>
-                ))}
-            </div>
         </div>  
     );
 };

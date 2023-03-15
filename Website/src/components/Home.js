@@ -46,6 +46,15 @@ function Home({selectedSources, setSelectedSources}) {
         return <h1>Loading...</h1>
     }
 
+    if (selectedSources.length === 0) {
+        return (
+        <div className="center"> 
+        <h1>You have not selected any sources</h1>
+        <h2>Click on "Select sources" to display your alternatives and select the preferred source/sources</h2>
+        </div>
+        );
+    }
+
     return (
         <div>
         <div className="center">
