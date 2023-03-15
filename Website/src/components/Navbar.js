@@ -11,6 +11,9 @@ import React, {
 
 function Navbar({selectedSources, setSelectedSources}){
     const [showSource, setShowSource] = useState(false);
+    const [sources, setSources] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const ref = firebase.firestore().collection("Sources");
 
     useEffect(() => {
     function getTheSources() {
@@ -26,12 +29,24 @@ function Navbar({selectedSources, setSelectedSources}){
     getTheSources();
     }, []);
 
+    useEffect(() => {
+        localStorage.setItem('selectedSources', JSON.stringify(selectedSources));
+        localStorage.setItem("sources1", JSON.stringify(sources)); 
+    }, [selectedSources]);
+    
 
-    const ref = firebase.firestore().collection("Sources");
+    useEffect(() =>{
+        getSources();
+    }, []);
 
-    const [sources, setSources] = useState([]);
-    const [loading, setLoading] = useState(false);
-
+    const handleSourceClick = (source) => {
+        if (selectedSources.includes(source)) {
+            setSelectedSources(selectedSources.filter(s => s !== source));
+        } else {
+            setSelectedSources([...selectedSources, source]);
+        }
+    };
+    
     function getSources(){
         setLoading(true);
         ref.onSnapshot((querySnapshot) => {
@@ -42,39 +57,17 @@ function Navbar({selectedSources, setSelectedSources}){
             setSources(items);
             setLoading(false);
         });
-    }
+    }  
 
-
-    useEffect(() => {
-        localStorage.setItem('selectedSources', JSON.stringify(selectedSources));
-        localStorage.setItem("sources1", JSON.stringify(sources)); 
-    }, [selectedSources]);
-    
-    useEffect(() =>{
-        getSources();
-    }, []);
-    
     if(loading){
         return <h1>Loading...</h1>
     }
-
-    const handleSourceClick = (source) => {
-        if (selectedSources.includes(source)) {
-            setSelectedSources(selectedSources.filter(s => s !== source));
-        } else {
-            setSelectedSources([...selectedSources, source]);
-        }
-    };
 
     return (
         <div>
             <div className="center">
                 <div>    
-                    <h2 className="shadow" onClick={() => {
-                        setShowSource(!showSource);
-                        
-                    }
-                    }>Header</h2>
+                    <h2 className="shadow" onClick={() => setShowSource(!showSource)}>Header</h2>
                     {showSource && (
                         <div>
                             <h3>Select Source:</h3>

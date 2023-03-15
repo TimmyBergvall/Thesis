@@ -215,7 +215,8 @@ def print_articles(website):
         article_ref.set({
             u'header' : headerDict[i],
             u'link' : linkDict[i],
-            u'text': summarizedDict[i]
+            u'text': summarizedDict[i],
+            u'source': website
         })
 
 
