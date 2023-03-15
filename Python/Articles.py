@@ -19,8 +19,8 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 
 # Use a service account.
-#cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
-cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+#cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
 
 app = firebase_admin.initialize_app(cred)
 
@@ -57,44 +57,46 @@ website = "expressen"
 def main():
     set_variables()
     get_links()
-    print_articles(website)
+    addtoDB(website)
 
 def set_variables():
-    # This data will be fetched from a database in the future
-    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
-    if website == "aftonbladet":
-        landing_page = "https://www.aftonbladet.se/senastenytt"
-        link_class = "hyperion-css-1ypiqmx"
-        start_link_for_article = "https://www.aftonbladet.se"
-        li_or_a = "a"
-        div_or_p_lead = "p"
-        div_or_p_body = "p"
-        lead_class = "hyperion-css-n38mho"
-        body_class = "borderColor borderWidth margin padding mqDark hyperion-css-1nrt0vq"
-        header_class = "h1 hyperion-css-5tht1q"
+    data_dict = {}
 
-    elif website == "expressen":
-        landing_page = "https://www.expressen.se/nyheter/senaste-nytt/"
-        link_class = "page-list__item"
-        start_link_for_article = "https://www.expressen.se/"
-        li_or_a = "li"
-        div_or_p_lead = "div"
-        div_or_p_body = "div"
-        lead_class = "article__preamble rich-text"
-        body_class = "rich-text"
-        header_class = ""
+    data_dict = {}
+
+    doc_ids = ['aftonbladet', 'svt', 'expressen']
+
+    for doc_id in doc_ids:
+        doc_ref = db.collection('website').document(doc_id)
+        doc = doc_ref.get()
+        
+        data = {}
+        data['landing_page'] = doc.get('landing_page')
+        data['link_class'] = doc.get('link_class')
+        data['start_link_for_article'] = doc.get('start_link_for_article')
+        data['li_or_a'] = doc.get('li_or_a')
+        data['div_or_p_lead'] = doc.get('div_or_p_lead')
+        data['div_or_p_body'] = doc.get('div_or_p_body')
+        data['lead_class'] = doc.get('lead_class')
+        data['body_class'] = doc.get('body_class')
+        data['header_class'] = doc.get('header_class')
+        
+        data_dict[doc_id] = data
+
+    for doc_id, data in data_dict.items():
+        print("Document:", doc_id)
+        print("landing_page:", data['landing_page'])
+        print("link_class:", data['link_class'])
+        print("start_link_for_article:", data['start_link_for_article'])
+        print("li_or_a:", data['li_or_a'])
+        print("div_or_p_lead:", data['div_or_p_lead'])
+        print("div_or_p_body:", data['div_or_p_body'])
+        print("lead_class:", data['lead_class'])
+        print("body_class:", data['body_class'])
+        print("header_class:", data['header_class'])
+        print("-------") 
 
 
-    elif website == "svt":
-        landing_page = "https://www.svt.se/?visaallasenastenytt=1#senastenytt"
-        link_class = "nyh_latest-news-item__link"
-        start_link_for_article = "https://www.svt.se"
-        li_or_a = "a"
-        div_or_p_lead = "div"
-        div_or_p_body = "div"
-        lead_class = "nyh_article__lead"
-        body_class = "nyh_article-body"
-        header_class = "nyh_article__heading"
 
 
 
@@ -196,15 +198,9 @@ def get_article(link, counter, articleCounter):
         list.append(append)
         ml(append, counter)
 
-def print_articles(website):
+def addtoDB(website):
     
     for i in summarizedDict:
-        print(i)
-        print(linkDict[i])
-        print(headerDict[i])
-        print(summarizedDict[i])
-        print("\n\n\n")
-
         #define objct (each article)
         source_ref = db.collection(u'Sources').document(website)
         source_ref.set({
@@ -219,6 +215,11 @@ def print_articles(website):
             u'source': website
         })
 
+       
+
+        
+
+        
 
 
 
@@ -226,16 +227,7 @@ def print_articles(website):
 
 
 
-    #for i in myDict:
-        #print(myDict[i])
-    #for articles in list:
-        #print(articles)
-        #print("\n\n\n")
 
-    #print(myDict) 
-
-    #print(articleDict[1])
-    print("")
     
 
 
