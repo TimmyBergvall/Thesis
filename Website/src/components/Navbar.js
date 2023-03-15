@@ -9,10 +9,23 @@ import React, {
 
 
 
-function Navbar(){
-  
+function Navbar({selectedSources, setSelectedSources}){
     const [showSource, setShowSource] = useState(false);
-    const [selectedSources, setSelectedSources] = useState([]);
+
+    useEffect(() => {
+    function getTheSources() {
+        const ref = firebase.firestore().collection("Sources");
+        ref.onSnapshot((querySnapshot) => {
+            const items = [];
+            querySnapshot.forEach((doc) =>{
+                items.push(doc.id);
+            });
+            setSelectedSources(items);
+    });
+    }
+    getTheSources();
+    }, []);
+
 
     const ref = firebase.firestore().collection("Sources");
 
@@ -30,6 +43,12 @@ function Navbar(){
             setLoading(false);
         });
     }
+
+
+    useEffect(() => {
+        localStorage.setItem('selectedSources', JSON.stringify(selectedSources));
+        localStorage.setItem("sources1", JSON.stringify(sources)); 
+    }, [selectedSources]);
     
     useEffect(() =>{
         getSources();
@@ -51,7 +70,11 @@ function Navbar(){
         <div>
             <div className="center">
                 <div>    
-                    <h2 className="shadow" onClick={() => setShowSource(!showSource)}>Header</h2>
+                    <h2 className="shadow" onClick={() => {
+                        setShowSource(!showSource);
+                        
+                    }
+                    }>Header</h2>
                     {showSource && (
                         <div>
                             <h3>Select Source:</h3>

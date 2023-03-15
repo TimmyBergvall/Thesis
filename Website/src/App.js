@@ -1,5 +1,8 @@
 import './App.css';
 
+import React, { 
+  useState
+} from 'react';
 
 import {
   BrowserRouter as Router,
@@ -17,13 +20,15 @@ import Navbar from "./components/Navbar"
 
 
 function App() {
+
+  const [selectedSources, setSelectedSources] = useState([]);
   
   return (
     <>
-      <Navbar />
+      <Navbar selectedSources={selectedSources} setSelectedSources={setSelectedSources} />
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home selectedSources={selectedSources} setSelectedSources={setSelectedSources} />} />
 
 
         
