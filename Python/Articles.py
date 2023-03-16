@@ -11,8 +11,6 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.text_rank import TextRankSummarizer
 
-
-
 # pip install firebase-admin
 import firebase_admin
 from firebase_admin import credentials
@@ -26,11 +24,7 @@ app = firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-
-
-
-
-# Attributes that should be collected from the website
+# Attributes that show the structure of the database
 landing_page = ""
 link_class = ""
 start_link_for_article = ""
@@ -52,50 +46,32 @@ summarizedDict = {}
 
 linkDict = {}
 
-website = "expressen"
 
 def main():
-    set_variables()
-    get_links()
-    print_articles(website)
+    docs = db.collection('website').get()
 
-def set_variables():
-    # This data will be fetched from a database in the future
+    for doc in docs:
+        set_variables(doc.id)
+        get_links()
+        add_to_db(doc.id)
+        
+    
+
+def set_variables(doc_id):
     global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
-    if website == "aftonbladet":
-        landing_page = "https://www.aftonbladet.se/senastenytt"
-        link_class = "hyperion-css-1ypiqmx"
-        start_link_for_article = "https://www.aftonbladet.se"
-        li_or_a = "a"
-        div_or_p_lead = "p"
-        div_or_p_body = "p"
-        lead_class = "hyperion-css-n38mho"
-        body_class = "borderColor borderWidth margin padding mqDark hyperion-css-1nrt0vq"
-        header_class = "h1 hyperion-css-5tht1q"
 
-    elif website == "expressen":
-        landing_page = "https://www.expressen.se/nyheter/senaste-nytt/"
-        link_class = "page-list__item"
-        start_link_for_article = "https://www.expressen.se/"
-        li_or_a = "li"
-        div_or_p_lead = "div"
-        div_or_p_body = "div"
-        lead_class = "article__preamble rich-text"
-        body_class = "rich-text"
-        header_class = ""
+    doc = db.collection('website').document(doc_id).get()
 
-
-    elif website == "svt":
-        landing_page = "https://www.svt.se/?visaallasenastenytt=1#senastenytt"
-        link_class = "nyh_latest-news-item__link"
-        start_link_for_article = "https://www.svt.se"
-        li_or_a = "a"
-        div_or_p_lead = "div"
-        div_or_p_body = "div"
-        lead_class = "nyh_article__lead"
-        body_class = "nyh_article-body"
-        header_class = "nyh_article__heading"
-
+    #set variables to the values from the database
+    landing_page = doc.get('landing_page')
+    link_class = doc.get('link_class')
+    start_link_for_article = doc.get('start_link_for_article')
+    li_or_a = doc.get('li_or_a')
+    div_or_p_lead = doc.get('div_or_p_lead')
+    div_or_p_body = doc.get('div_or_p_body')
+    lead_class = doc.get('lead_class')
+    body_class = doc.get('body_class')
+    header_class = doc.get('header_class')
 
 
 def get_links():
@@ -103,27 +79,23 @@ def get_links():
     r = requests.get(landing_page)
     # Parse the HTML content
     soup = BeautifulSoup(r.content, 'html.parser')
-    # Find first 10 links on the page
-    links = soup.find_all(li_or_a, attrs={"class": link_class})[:20]
+    # Find first 15 links on the page
+    links = soup.find_all(li_or_a, attrs={"class": link_class})[:15]
 
     counter = 0
     articleCounter = 0
     while articleDict.__len__() < 10:
         for link in links:
+            print(articleDict.__len__() )
             if articleDict.__len__() == 10:
                 break
             counter += 1
             articleCounter += 1
             get_article(link, counter, articleCounter)
-            
-        
+
 
 def get_article(link, counter, articleCounter):
     # Get the link to the article
-
-   
-        
-
     if li_or_a == "li":
         if ("https://" in link.find("a").get("href")):
             myLinks = link.find("a").get("href")
@@ -150,15 +122,8 @@ def get_article(link, counter, articleCounter):
     else:
         header = soup.find_all("h1")
         
-    
-    
-
-
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     body = soup.find_all(div_or_p_body, attrs={"class": body_class})
-
-   
-
 
     # Add the header of the article
     append = ""
@@ -196,15 +161,20 @@ def get_article(link, counter, articleCounter):
         list.append(append)
         ml(append, counter)
 
-def print_articles(website):
-    
-    for i in summarizedDict:
-        print(i)
-        print(linkDict[i])
-        print(headerDict[i])
-        print(summarizedDict[i])
-        print("\n\n\n")
 
+def ml(append, counter):
+    parser = PlaintextParser.from_string(append, Tokenizer("swedish"))
+
+    summarizer = TextRankSummarizer()
+    summary = summarizer(parser.document, 1)  # Summarize the document with 3 sentences
+
+    for sentence in summary:
+        sentence = str(sentence).replace(".", ". ")
+        summarizedDict[counter] = sentence
+
+
+def add_to_db(website):
+    for i in summarizedDict:
         #define objct (each article)
         source_ref = db.collection(u'Sources').document(website)
         source_ref.set({
@@ -219,39 +189,20 @@ def print_articles(website):
             u'source': website
         })
 
+    # Clear list and dictionaries
+    headerDict.clear()
+    articleDict.clear()
+    summarizedDict.clear()
+    linkDict.clear()
+    list.clear()
 
+    # for i in summarizedDict:
+    #     print(i)
+    #     print(linkDict[i])
+    #     print(headerDict[i])
+    #     print(summarizedDict[i])
+    #     print("\n\n\n")
 
-
-
-
-
-
-    #for i in myDict:
-        #print(myDict[i])
-    #for articles in list:
-        #print(articles)
-        #print("\n\n\n")
-
-    #print(myDict) 
-
-    #print(articleDict[1])
-    print("")
     
-
-
-def ml(append, counter):
-    parser = PlaintextParser.from_string(append, Tokenizer("swedish"))
-
-    summarizer = TextRankSummarizer()
-    summary = summarizer(parser.document, 1)  # Summarize the document with 3 sentences
-
-    # Print the summary
-    for sentence in summary:
-        sentence = str(sentence).replace(".", ". ")
-        summarizedDict[counter] = sentence
-        #print("article ", counter, "\n\n", sentence, "\n\n")
-
-    #print(summarizedDict)
-
 if __name__ == "__main__":
     main()
