@@ -54,6 +54,7 @@ def main():
         set_variables(doc.id)
         get_links()
         add_to_db(doc.id)
+        print("Done with " + doc.id)
         
     
 
@@ -86,7 +87,6 @@ def get_links():
     articleCounter = 0
     while articleDict.__len__() < 10:
         for link in links:
-            print(articleDict.__len__() )
             if articleDict.__len__() == 10:
                 break
             counter += 1
