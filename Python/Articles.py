@@ -3,13 +3,9 @@ import requests
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
 
-#import nltk
-#nltk.download('punkt')
-#pip intsll numpy
-# pip install sumy
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.text_rank import TextRankSummarizer
+# pip install torch
+# pip install bert-extractive-summarizer
+from summarizer import Summarizer
 
 # pip install firebase-admin
 import firebase_admin
@@ -17,7 +13,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 
 # Use a service account.
-#cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
+# cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
 cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
 
 app = firebase_admin.initialize_app(cred)
@@ -55,15 +51,14 @@ def main():
         get_links()
         add_to_db(doc.id)
         print("Done with " + doc.id)
-        
-    
+
 
 def set_variables(doc_id):
     global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
 
     doc = db.collection('website').document(doc_id).get()
 
-    #set variables to the values from the database
+    # set variables to the values from the database
     landing_page = doc.get('landing_page')
     link_class = doc.get('link_class')
     start_link_for_article = doc.get('start_link_for_article')
@@ -121,7 +116,7 @@ def get_article(link, counter, articleCounter):
         header = soup.find_all("h1", attrs={"class": header_class})
     else:
         header = soup.find_all("h1")
-        
+
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     body = soup.find_all(div_or_p_body, attrs={"class": body_class})
 
@@ -131,21 +126,19 @@ def get_article(link, counter, articleCounter):
         the_header = '"' + header.get_text() + '"'
         the_header = the_header.replace("\n", " ")
         headerDict[articleCounter] = the_header
-        #append += the_header + "\n"
-
+        # append += the_header + "\n"
 
     # add the lead of the article
     for lead in lead:
         the_lead = lead.get_text()
         append += the_lead
 
-    
     # add the body of the article
     the_body = ""
     if div_or_p_body == "div":
         for div in body:
             p_in_div = div.find_all("p")
-            if (p_in_div != []):    
+            if (p_in_div != []):
                 for body in p_in_div:
                     body_content = body.get_text()
                     the_body += body_content
@@ -159,32 +152,36 @@ def get_article(link, counter, articleCounter):
     if (append != ""):
         articleDict[counter] = append
         list.append(append)
-        ml(append, counter)
+        mlSummarizer(append, counter)
 
 
-def ml(append, counter):
-    parser = PlaintextParser.from_string(append, Tokenizer("swedish"))
+def mlSummarizer(append, counter):
+    # error handler to not print warnings
+    import logging
+    logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
+    import warnings
+    warnings.filterwarnings("ignore")
 
-    summarizer = TextRankSummarizer()
-    summary = summarizer(parser.document, 1)  # Summarize the document with 3 sentences
+    model = Summarizer()
 
-    for sentence in summary:
-        sentence = str(sentence).replace(".", ". ")
-        summarizedDict[counter] = sentence
+    summarizedArticle = model(append, num_sentences=3)
+
+    summarizedDict[counter] = summarizedArticle
 
 
 def add_to_db(website):
     for i in summarizedDict:
-        #define objct (each article)
+        # define objct (each article)
         source_ref = db.collection(u'Sources').document(website)
         source_ref.set({
             u'name': website
         })
 
-        article_ref = source_ref.collection(u'Articles').document('Article' + str(i-1))
+        article_ref = source_ref.collection(
+            u'Articles').document('Article' + str(i-1))
         article_ref.set({
-            u'header' : headerDict[i],
-            u'link' : linkDict[i],
+            u'header': headerDict[i],
+            u'link': linkDict[i],
             u'text': summarizedDict[i],
             u'source': website
         })
@@ -196,13 +193,5 @@ def add_to_db(website):
     linkDict.clear()
     list.clear()
 
-    # for i in summarizedDict:
-    #     print(i)
-    #     print(linkDict[i])
-    #     print(headerDict[i])
-    #     print(summarizedDict[i])
-    #     print("\n\n\n")
-
-    
 if __name__ == "__main__":
     main()
