@@ -20,7 +20,7 @@ app = firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# Attributes that show the structure of the database
+# Attributes that show the structure of the news page
 landing_page = ""
 link_class = ""
 start_link_for_article = ""
@@ -31,15 +31,9 @@ lead_class = ""
 body_class = ""
 header_class = ""
 
-
-list = []
-
 headerDict = {}
-
 articleDict = {}
-
 summarizedDict = {}
-
 linkDict = {}
 
 
@@ -54,27 +48,28 @@ def main():
 
 
 def set_variables(doc_id):
-    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
+    global landing_page, link_class, start_link_for_article, li_or_a 
+    div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
 
     doc = db.collection('website').document(doc_id).get()
 
     # set variables to the values from the database
-    landing_page = doc.get('landing_page')
-    link_class = doc.get('link_class')
-    start_link_for_article = doc.get('start_link_for_article')
-    li_or_a = doc.get('li_or_a')
-    div_or_p_lead = doc.get('div_or_p_lead')
-    div_or_p_body = doc.get('div_or_p_body')
-    lead_class = doc.get('lead_class')
-    body_class = doc.get('body_class')
-    header_class = doc.get('header_class')
+    landing_page = doc.get("landing_page")
+    link_class = doc.get("link_class")
+    start_link_for_article = doc.get("start_link_for_article")
+    li_or_a = doc.get("li_or_a")
+    div_or_p_lead = doc.get("div_or_p_lead")
+    div_or_p_body = doc.get("div_or_p_body")
+    lead_class = doc.get("lead_class")
+    body_class = doc.get("body_class")
+    header_class = doc.get("header_class")
 
 
 def get_links():
     # Make a request to the website
-    r = requests.get(landing_page)
+    requestPage = requests.get(landing_page)
     # Parse the HTML content
-    soup = BeautifulSoup(r.content, 'html.parser')
+    soup = BeautifulSoup(requestPage.content, "html.parser")
     # Find first 15 links on the page
     links = soup.find_all(li_or_a, attrs={"class": link_class})[:15]
 
@@ -148,10 +143,9 @@ def get_article(link, counter, articleCounter):
             the_body += body_content
     append += the_body
 
-    # add the complete articles to the list
+    # add the article to the dictionary
     if (append != ""):
         articleDict[counter] = append
-        list.append(append)
         mlSummarizer(append, counter)
 
 
@@ -186,12 +180,11 @@ def add_to_db(website):
             u'source': website
         })
 
-    # Clear list and dictionaries
+    # Clear dictionaries
     headerDict.clear()
     articleDict.clear()
     summarizedDict.clear()
     linkDict.clear()
-    list.clear()
 
 if __name__ == "__main__":
     main()
