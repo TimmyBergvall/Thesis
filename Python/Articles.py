@@ -48,8 +48,7 @@ def main():
 
 
 def set_variables(doc_id):
-    global landing_page, link_class, start_link_for_article, li_or_a 
-    div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
+    global landing_page, link_class, start_link_for_article, li_or_a, div_or_p_lead, div_or_p_body, lead_class, body_class, header_class
 
     doc = db.collection('website').document(doc_id).get()
 
@@ -74,17 +73,16 @@ def get_links():
     links = soup.find_all(li_or_a, attrs={"class": link_class})[:15]
 
     counter = 0
-    articleCounter = 0
     while articleDict.__len__() < 10:
         for link in links:
             if articleDict.__len__() == 10:
                 break
             counter += 1
-            articleCounter += 1
-            get_article(link, counter, articleCounter)
+            get_article(link, counter)
 
 
-def get_article(link, counter, articleCounter):
+def get_article(link, counter):
+    print("Getting article " + str(summarizedDict.__len__()))
     # Get the link to the article
     if li_or_a == "li":
         if ("https://" in link.find("a").get("href")):
@@ -120,7 +118,7 @@ def get_article(link, counter, articleCounter):
     for header in header:
         the_header = '"' + header.get_text() + '"'
         the_header = the_header.replace("\n", " ")
-        headerDict[articleCounter] = the_header
+        headerDict[counter] = the_header
         # append += the_header + "\n"
 
     # add the lead of the article
