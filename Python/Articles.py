@@ -30,6 +30,7 @@ div_or_p_body = ""
 lead_class = ""
 body_class = ""
 header_class = ""
+counter = 0
 
 headerDict = {}
 articleDict = {}
@@ -38,9 +39,12 @@ linkDict = {}
 
 
 def main():
+    global counter
     docs = db.collection('website').get()
 
     for doc in docs:
+        print("Starting with " + doc.id)
+        counter = 0
         set_variables(doc.id)
         get_links()
         add_to_db(doc.id)
@@ -71,17 +75,16 @@ def get_links():
     soup = BeautifulSoup(requestPage.content, "html.parser")
     # Find first 15 links on the page
     links = soup.find_all(li_or_a, attrs={"class": link_class})[:15]
-
-    counter = 0
-    while articleDict.__len__() < 10:
+    
+    while summarizedDict.__len__() < 10:
         for link in links:
             if articleDict.__len__() == 10:
                 break
-            counter += 1
-            get_article(link, counter)
+            get_article(link)
 
 
-def get_article(link, counter):
+def get_article(link):
+    global counter
     print("Getting article " + str(summarizedDict.__len__()))
     # Get the link to the article
     if li_or_a == "li":
@@ -104,28 +107,26 @@ def get_article(link, counter):
     # Parse the HTML content
     soup = BeautifulSoup(req.content, 'html.parser')
 
-    # Find all divs on the page
     if (header_class != ""):
         header = soup.find_all("h1", attrs={"class": header_class})
     else:
         header = soup.find_all("h1")
 
-    lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
-    body = soup.find_all(div_or_p_body, attrs={"class": body_class})
-
+        
     # Add the header of the article
     append = ""
     for header in header:
         the_header = '"' + header.get_text() + '"'
         the_header = the_header.replace("\n", " ")
         headerDict[counter] = the_header
-        # append += the_header + "\n"
 
+    lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     # add the lead of the article
     for lead in lead:
         the_lead = lead.get_text()
         append += the_lead
 
+    body = soup.find_all(div_or_p_body, attrs={"class": body_class})
     # add the body of the article
     the_body = ""
     if div_or_p_body == "div":
@@ -141,13 +142,18 @@ def get_article(link, counter):
             the_body += body_content
     append += the_body
 
+    if (header == []):
+        append = ""
+
     # add the article to the dictionary
     if (append != ""):
         articleDict[counter] = append
-        mlSummarizer(append, counter)
+        mlSummarizer()
+        counter += 1
 
 
-def mlSummarizer(append, counter):
+def mlSummarizer():
+    global counter
     # error handler to not print warnings
     import logging
     logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
@@ -156,7 +162,7 @@ def mlSummarizer(append, counter):
 
     model = Summarizer()
 
-    summarizedArticle = model(append, num_sentences=3)
+    summarizedArticle = model(articleDict[counter], num_sentences=3)
 
     summarizedDict[counter] = summarizedArticle
 
@@ -170,7 +176,7 @@ def add_to_db(website):
         })
 
         article_ref = source_ref.collection(
-            u'Articles').document('Article' + str(i-1))
+            u'Articles').document('Article' + str(i))
         article_ref.set({
             u'header': headerDict[i],
             u'link': linkDict[i],
