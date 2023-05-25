@@ -12,6 +12,9 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
+# Run the script continuously
+import time
+
 # Use a service account.
 # cred = credentials.Certificate('C:\\Users\\vigge\\OneDrive\\Dokument\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
 cred = credentials.Certificate('C:\\Users\\Timmy\\Documents\\GitHub\\Thesis\\Python\\thesis-d3405-firebase-adminsdk-rhutc-f3e32f581c.json')
@@ -42,13 +45,15 @@ def main():
     global counter
     docs = db.collection('website').get()
 
-    for doc in docs:
-        print("Starting with " + doc.id)
-        counter = 0
-        set_variables(doc.id)
-        get_links()
-        add_to_db(doc.id)
-        print("Done with " + doc.id)
+    while True:
+        for doc in docs:
+            print("Starting with " + doc.id)
+            counter = 0
+            set_variables(doc.id)
+            get_links()
+            add_to_db(doc.id)
+            print("Done with " + doc.id)
+        time.sleep(1800) # 30 minutes
 
 
 def set_variables(doc_id):
@@ -114,12 +119,12 @@ def get_article(link):
 
         
     # Add the header of the article
-    append = ""
     for header in header:
         the_header = '"' + header.get_text() + '"'
         the_header = the_header.replace("\n", " ")
         headerDict[counter] = the_header
 
+    append = ""
     lead = soup.find_all(div_or_p_lead, attrs={"class": lead_class})
     # add the lead of the article
     for lead in lead:
@@ -142,11 +147,8 @@ def get_article(link):
             the_body += body_content
     append += the_body
 
-    if (header == []):
-        append = ""
-
     # add the article to the dictionary
-    if (append != ""):
+    if (append != "" and header != []):
         articleDict[counter] = append
         mlSummarizer()
         counter += 1
@@ -168,6 +170,7 @@ def mlSummarizer():
 
 
 def add_to_db(website):
+    Website = website[0].upper() + website[1:]
     for i in summarizedDict:
         # define objct (each article)
         source_ref = db.collection(u'Sources').document(website)
@@ -181,7 +184,7 @@ def add_to_db(website):
             u'header': headerDict[i],
             u'link': linkDict[i],
             u'text': summarizedDict[i],
-            u'source': website
+            u'source': Website
         })
 
     # Clear dictionaries

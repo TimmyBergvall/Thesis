@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 function Navbar({ selectedSources, setSelectedSources }) {
   const [showSource, setShowSource] = useState(false);
   const [sources, setSources] = useState([]);
+  const [sources1, setSources1] = useState([]);
   const [loading, setLoading] = useState(false);
   const [chosenSource, setChosenSource] = useState("");
   const ref = firebase.firestore().collection("Sources");
